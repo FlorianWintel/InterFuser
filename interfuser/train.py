@@ -970,7 +970,7 @@ def main():
 
     linear_scaled_lr = (
         #args.lr * args.batch_size * torch.distributed.get_world_size() / 512.0
-        args.lr * args.batch_size * args.get_world_size / 512.0
+        args.lr * args.batch_size * args.world_size / 512.0
     )
     args.lr = linear_scaled_lr
     if args.with_backbone_lr:
