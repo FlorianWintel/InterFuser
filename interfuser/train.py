@@ -868,12 +868,13 @@ def main():
             )
     args.prefetcher = not args.no_prefetcher
     args.distributed = False
-    if "WORLD_SIZE" in os.environ:
-        args.distributed = int(os.environ["WORLD_SIZE"]) > 1
+    #if "WORLD_SIZE" in os.environ:
+    #    args.distributed = int(os.environ["WORLD_SIZE"]) > 1
     args.device = "cuda:0"
     args.world_size = 1
     args.rank = 0  # global rank
-    if args.distributed:
+    #if args.distributed:
+    if True:
         args.device = "cuda:%d" % args.local_rank
         torch.cuda.set_device(args.local_rank)
         torch.distributed.init_process_group(backend="nccl", init_method="env://")
@@ -968,7 +969,8 @@ def main():
         model = torch.jit.script(model)
 
     linear_scaled_lr = (
-        args.lr * args.batch_size * torch.distributed.get_world_size() / 512.0
+        #args.lr * args.batch_size * torch.distributed.get_world_size() / 512.0
+        args.lr * args.batch_size * args.get_world_size / 512.0
     )
     args.lr = linear_scaled_lr
     if args.with_backbone_lr:
@@ -979,7 +981,7 @@ def main():
         backbone_linear_scaled_lr = (
             args.backbone_lr
             * args.batch_size
-            * torch.distributed.get_world_size()
+            * args.world_size    #torch.distributed.get_world_size()
             / 512.0
         )
         backbone_weights = []
@@ -1660,7 +1662,8 @@ def validate(
             )[0]
             stop_sign_error = accuracy(output[3], target[3])[0]
 
-            if args.distributed:
+            #if args.distributed:
+            if True:
                 reduced_loss = reduce_tensor(loss.data, args.world_size)
                 reduced_loss_traffic = reduce_tensor(loss_traffic.data, args.world_size)
                 reduced_loss_velocity = reduce_tensor(
